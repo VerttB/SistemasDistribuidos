@@ -1,0 +1,51 @@
+syntax = "proto3";
+
+// Importamos Empty para tipos de retorno que não enviam dados significativos,
+// como confirmações de que uma mensagem foi recebida pelo servidor.
+import "google/protobuf/empty.proto";
+
+// Definimos um 'package' para evitar conflitos de nome,
+// especialmente útil em projetos maiores.
+package chat_system;
+
+// Mensagem para o Relógio Vetorial
+// Este será o nosso vetor [c0, c1, c2] para ClienteA, ClienteB e Servidor.
+message VectorClock {
+  // 'repeated' indica que 'clock' é uma lista de inteiros.
+  // O tamanho desta lista será N (3, no nosso caso).
+  // O índice 0: contador do ClienteA (processo 0)
+  // O índice 1: contador do ClienteB (processo 1)
+  // O índice 2: contador do Servidor (processo 2)
+  repeated int32 clock = 1;
+}
+
+// Mensagem de Chat
+// Esta é a estrutura da mensagem que será trocada.
+message ChatMessage {
+  string user_id = 1;           // Um nome ou ID amigável para quem enviou (ex: "Alice", "Bob", "Servidor").
+                                // Importante: este é diferente do ID do processo (0,1,2) usado no vetor.
+  string text = 2;              // O conteúdo da mensagem.
+  VectorClock vector_clock = 3;   // O relógio vetorial do remetente no momento do envio.
+  string group_id = 4;          // ID do grupo de chat para o qual a mensagem se destina (ex: "GrupoPrincipal").
+}
+
+// Requisição para se inscrever em um grupo de chat.
+message SubscriptionRequest {
+  string user_id = 1;           // ID do usuário que está se inscrevendo.
+  // Precisamos saber qual "slot" do vetor este cliente representa.
+  // Usaremos 0 para ClienteA e 1 para ClienteB.
+  int32 client_process_id = 2;
+  string group_id = 3;          // ID do grupo ao qual o cliente quer se inscrever.
+}
+
+// Nosso Serviço de Chat gRPC
+service ChatService {
+  // Método para um cliente enviar uma mensagem ao servidor.
+  // O cliente anexa seu user_id, texto, group_id e seu VectorClock atual.
+  rpc SendMessage(ChatMessage) returns (google.protobuf.Empty);
+
+  // Método para um cliente se inscrever e receber um fluxo (stream) de mensagens de um grupo.
+  // O servidor usará esta stream para enviar mensagens (com seus respectivos VectorClocks)
+  // para os clientes inscritos no grupo.
+  rpc SubscribeToGroup(SubscriptionRequest) returns (stream ChatMessage);
+}
