@@ -49,6 +49,22 @@ class ChatServiceServicer(chat_pb2_grpc.ChatServiceServicer):
 
         print("Serviço de Chat inicializado.")
 
+
+    
+    def ListGroups(self, request, context):
+        group_ids = list(self.groups.keys())
+        return chat_pb2.ListGroupsResponse(group_ids=group_ids)
+        
+    
+    def CreateGroup(self, request, context):
+        group_id = request.group_id
+        if group_id in self.groups:
+            print(f"[!] Grupo '{group_id}' já existe.")
+        else:
+            self.groups[group_id] = []
+            print(f"[+] Grupo '{group_id}' criado com sucesso.")
+        return empty_pb2.Empty()
+        
     def SendMessage(self, request: chat_pb2.ChatMessage, context):
         """
         Handles incoming chat messages from clients and retransmits them to subscribers of a group.
