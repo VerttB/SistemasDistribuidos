@@ -1,65 +1,81 @@
 syntax = "proto3";
 
-// Importamos Empty para tipos de retorno que não enviam dados significativos,
-// como confirmações de que uma mensagem foi recebida pelo servidor.
-import "google/protobuf/empty.proto";
-
-// Definimos um 'package' para evitar conflitos de nome,
-// especialmente útil em projetos maiores.
 package chat_system;
 
-// Mensagem para o Relógio Vetorial
-// Este será o nosso vetor [c0, c1, c2] para ClienteA, ClienteB e Servidor.
-message VectorClock {
-  // 'repeated' indica que 'clock' é uma lista de inteiros.
-  // O tamanho desta lista será N (3, no nosso caso).
-  // O índice 0: contador do ClienteA (processo 0)
-  // O índice 1: contador do ClienteB (processo 1)
-  // O índice 2: contador do Servidor (processo 2)
-  repeated int32 clock = 1;
-}
+import "google/protobuf/empty.proto";
 
-// Mensagem de Chat
-// Esta é a estrutura da mensagem que será trocada.
-message ChatMessage {
-  string user_id = 1;             // Um nome ou ID amigável para quem enviou (ex: "Alice", "Bob", "Servidor").
-                                  // Importante: este é diferente do ID do processo (0,1,2) usado no vetor.
-  string text = 2;                // O conteúdo da mensagem.
-  VectorClock vector_clock = 3;  // O relógio vetorial do remetente no momento do envio.
-  string group_id = 4;           // ID do grupo de chat para o qual a mensagem se destina (ex: "GrupoPrincipal").
-}
+// --------- Mensagens do Servidor ---------
 
-// Requisição para se inscrever em um grupo de chat.
-message SubscriptionRequest {
-  string user_id = 1;           // ID do usuário que está se inscrevendo.
-  int32 client_process_id = 2;  // Slot no vetor: 0 para ClienteA, 1 para ClienteB, etc.
-  string group_id = 3;          // ID do grupo ao qual o cliente quer se inscrever.
-}
-
-// Requisição para criar um novo grupo
 message CreateGroupRequest {
   string group_id = 1;
+  string password = 2; // opcional
 }
 
-// Requisição vazia para listar grupos existentes
+message CreateGroupResponse {
+  bool success = 1;
+  string message = 2;
+}
+
 message ListGroupsRequest {}
 
-// Resposta com a lista de grupos existentes
 message ListGroupsResponse {
   repeated string group_ids = 1;
 }
 
-// Nosso Serviço de Chat gRPC
+message EnterGroupRequest {
+  string group_id = 1;
+  string password = 2;
+  string user_id = 3;
+}
+
+message LeaveGroupRequest {
+  string group_id = 1;
+  string user_id = 2;
+}
+
+message EnterLeaveGroupResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+message GetGroupParticipantsRequest {
+  string group_id = 1;
+}
+
+message GetGroupParticipantsResponse {
+  repeated string user_ids = 1;
+}
+
+// --------- Mensagens do Cliente ---------
+
+message VectorClock {
+  repeated int32 clock = 1;
+}
+
+message ChatMessage {
+  string user_id = 1;
+  string text = 2;
+  VectorClock vector_clock = 3;
+  string group_id = 4;
+}
+
+message SubscriptionRequest {
+  string user_id = 1;
+  int32 client_process_id = 2;
+  string group_id = 3;
+}
+
+// --------- Serviços ---------
+
 service ChatService {
-  // Método para um cliente criar um grupo
-  rpc CreateGroup(CreateGroupRequest) returns (google.protobuf.Empty);
-
-  // Método para um cliente listar os grupos disponíveis
+  // Servidor: gerenciamento de grupos
+  rpc CreateGroup(CreateGroupRequest) returns (CreateGroupResponse);
   rpc ListGroups(ListGroupsRequest) returns (ListGroupsResponse);
+  rpc EnterGroup(EnterGroupRequest) returns (EnterLeaveGroupResponse);
+  rpc LeaveGroup(LeaveGroupRequest) returns (EnterLeaveGroupResponse);
+  rpc GetGroupParticipants(GetGroupParticipantsRequest) returns (GetGroupParticipantsResponse);
 
-  // Método para um cliente enviar uma mensagem ao servidor
+  // Cliente: enviar e receber mensagens (streaming)
   rpc SendMessage(ChatMessage) returns (google.protobuf.Empty);
-
-  // Método para um cliente se inscrever e receber mensagens de um grupo
   rpc SubscribeToGroup(SubscriptionRequest) returns (stream ChatMessage);
 }

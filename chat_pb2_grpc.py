@@ -27,7 +27,8 @@ if _version_not_supported:
 
 
 class ChatServiceStub(object):
-    """Nosso Serviço de Chat gRPC
+    """--------- Serviços ---------
+
     """
 
     def __init__(self, channel):
@@ -39,12 +40,27 @@ class ChatServiceStub(object):
         self.CreateGroup = channel.unary_unary(
                 '/chat_system.ChatService/CreateGroup',
                 request_serializer=chat__pb2.CreateGroupRequest.SerializeToString,
-                response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+                response_deserializer=chat__pb2.CreateGroupResponse.FromString,
                 _registered_method=True)
         self.ListGroups = channel.unary_unary(
                 '/chat_system.ChatService/ListGroups',
                 request_serializer=chat__pb2.ListGroupsRequest.SerializeToString,
                 response_deserializer=chat__pb2.ListGroupsResponse.FromString,
+                _registered_method=True)
+        self.EnterGroup = channel.unary_unary(
+                '/chat_system.ChatService/EnterGroup',
+                request_serializer=chat__pb2.EnterGroupRequest.SerializeToString,
+                response_deserializer=chat__pb2.EnterLeaveGroupResponse.FromString,
+                _registered_method=True)
+        self.LeaveGroup = channel.unary_unary(
+                '/chat_system.ChatService/LeaveGroup',
+                request_serializer=chat__pb2.LeaveGroupRequest.SerializeToString,
+                response_deserializer=chat__pb2.EnterLeaveGroupResponse.FromString,
+                _registered_method=True)
+        self.GetGroupParticipants = channel.unary_unary(
+                '/chat_system.ChatService/GetGroupParticipants',
+                request_serializer=chat__pb2.GetGroupParticipantsRequest.SerializeToString,
+                response_deserializer=chat__pb2.GetGroupParticipantsResponse.FromString,
                 _registered_method=True)
         self.SendMessage = channel.unary_unary(
                 '/chat_system.ChatService/SendMessage',
@@ -59,33 +75,50 @@ class ChatServiceStub(object):
 
 
 class ChatServiceServicer(object):
-    """Nosso Serviço de Chat gRPC
+    """--------- Serviços ---------
+
     """
 
     def CreateGroup(self, request, context):
-        """Método para um cliente criar um grupo
+        """Servidor: gerenciamento de grupos
         """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
     def ListGroups(self, request, context):
-        """Método para um cliente listar os grupos disponíveis
-        """
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def EnterGroup(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def LeaveGroup(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def GetGroupParticipants(self, request, context):
+        """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
     def SendMessage(self, request, context):
-        """Método para um cliente enviar uma mensagem ao servidor
+        """Cliente: enviar e receber mensagens (streaming)
         """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
     def SubscribeToGroup(self, request, context):
-        """Método para um cliente se inscrever e receber mensagens de um grupo
-        """
+        """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
@@ -96,12 +129,27 @@ def add_ChatServiceServicer_to_server(servicer, server):
             'CreateGroup': grpc.unary_unary_rpc_method_handler(
                     servicer.CreateGroup,
                     request_deserializer=chat__pb2.CreateGroupRequest.FromString,
-                    response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+                    response_serializer=chat__pb2.CreateGroupResponse.SerializeToString,
             ),
             'ListGroups': grpc.unary_unary_rpc_method_handler(
                     servicer.ListGroups,
                     request_deserializer=chat__pb2.ListGroupsRequest.FromString,
                     response_serializer=chat__pb2.ListGroupsResponse.SerializeToString,
+            ),
+            'EnterGroup': grpc.unary_unary_rpc_method_handler(
+                    servicer.EnterGroup,
+                    request_deserializer=chat__pb2.EnterGroupRequest.FromString,
+                    response_serializer=chat__pb2.EnterLeaveGroupResponse.SerializeToString,
+            ),
+            'LeaveGroup': grpc.unary_unary_rpc_method_handler(
+                    servicer.LeaveGroup,
+                    request_deserializer=chat__pb2.LeaveGroupRequest.FromString,
+                    response_serializer=chat__pb2.EnterLeaveGroupResponse.SerializeToString,
+            ),
+            'GetGroupParticipants': grpc.unary_unary_rpc_method_handler(
+                    servicer.GetGroupParticipants,
+                    request_deserializer=chat__pb2.GetGroupParticipantsRequest.FromString,
+                    response_serializer=chat__pb2.GetGroupParticipantsResponse.SerializeToString,
             ),
             'SendMessage': grpc.unary_unary_rpc_method_handler(
                     servicer.SendMessage,
@@ -122,7 +170,8 @@ def add_ChatServiceServicer_to_server(servicer, server):
 
  # This class is part of an EXPERIMENTAL API.
 class ChatService(object):
-    """Nosso Serviço de Chat gRPC
+    """--------- Serviços ---------
+
     """
 
     @staticmethod
@@ -141,7 +190,7 @@ class ChatService(object):
             target,
             '/chat_system.ChatService/CreateGroup',
             chat__pb2.CreateGroupRequest.SerializeToString,
-            google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+            chat__pb2.CreateGroupResponse.FromString,
             options,
             channel_credentials,
             insecure,
@@ -169,6 +218,87 @@ class ChatService(object):
             '/chat_system.ChatService/ListGroups',
             chat__pb2.ListGroupsRequest.SerializeToString,
             chat__pb2.ListGroupsResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def EnterGroup(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/chat_system.ChatService/EnterGroup',
+            chat__pb2.EnterGroupRequest.SerializeToString,
+            chat__pb2.EnterLeaveGroupResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def LeaveGroup(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/chat_system.ChatService/LeaveGroup',
+            chat__pb2.LeaveGroupRequest.SerializeToString,
+            chat__pb2.EnterLeaveGroupResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def GetGroupParticipants(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/chat_system.ChatService/GetGroupParticipants',
+            chat__pb2.GetGroupParticipantsRequest.SerializeToString,
+            chat__pb2.GetGroupParticipantsResponse.FromString,
             options,
             channel_credentials,
             insecure,
