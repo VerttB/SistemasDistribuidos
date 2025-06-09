@@ -1,81 +1,102 @@
 syntax = "proto3";
 
-package chat_system;
-
 import "google/protobuf/empty.proto";
 
-// --------- Mensagens do Servidor ---------
+package chat_system;
+
+// --- Estruturas de Dados ---
+
+message VectorClock {
+    repeated int32 clock = 1;
+}
+
+message ChatMessage {
+    string user_id = 1;
+    string text = 2;
+    VectorClock vector_clock = 3;
+    string group_id = 4;
+}
+
+// Nova mensagem com informações de um peer
+message PeerInfo {
+    string user_id = 1;
+    string address = 2; // Ex: "localhost:50052"
+    int32 process_id = 3;
+}
+
+// Nova mensagem de evento para notificar sobre mudanças no grupo
+message GroupEvent {
+    oneof event {
+        PeerInfo user_joined = 1;
+        string user_left_id = 2;
+    }
+}
+
+// --- Mensagens de Requisição/Resposta para o Servidor de Descoberta ---
 
 message CreateGroupRequest {
-  string group_id = 1;
-  string password = 2; // opcional
+    string group_id = 1;
+    string password = 2;
 }
 
 message CreateGroupResponse {
-  bool success = 1;
-  string message = 2;
+    bool success = 1;
+    string message = 2;
 }
 
 message ListGroupsRequest {}
 
 message ListGroupsResponse {
-  repeated string group_ids = 1;
+    repeated string group_ids = 1;
 }
 
 message EnterGroupRequest {
-  string group_id = 1;
-  string password = 2;
-  string user_id = 3;
-}
-
-message LeaveGroupRequest {
-  string group_id = 1;
-  string user_id = 2;
+    string group_id = 1;
+    string password = 2;
+    string user_id = 3;
+    string peer_address = 4; // Endereço deste cliente
+    int32 client_process_id = 5;
 }
 
 message EnterLeaveGroupResponse {
-  bool success = 1;
-  string message = 2;
+    bool success = 1;
+    string message = 2;
+}
+
+message LeaveGroupRequest {
+    string group_id = 1;
+    string user_id = 2;
 }
 
 message GetGroupParticipantsRequest {
-  string group_id = 1;
+    string group_id = 1;
 }
 
 message GetGroupParticipantsResponse {
-  repeated string user_ids = 1;
-}
-
-// --------- Mensagens do Cliente ---------
-
-message VectorClock {
-  repeated int32 clock = 1;
-}
-
-message ChatMessage {
-  string user_id = 1;
-  string text = 2;
-  VectorClock vector_clock = 3;
-  string group_id = 4;
+    repeated PeerInfo peers = 1; // Retorna a lista de peers
 }
 
 message SubscriptionRequest {
-  string user_id = 1;
-  int32 client_process_id = 2;
-  string group_id = 3;
+    string user_id = 1;
+    string group_id = 2;
 }
 
-// --------- Serviços ---------
+// --- Serviços gRPC ---
 
-service ChatService {
-  // Servidor: gerenciamento de grupos
-  rpc CreateGroup(CreateGroupRequest) returns (CreateGroupResponse);
-  rpc ListGroups(ListGroupsRequest) returns (ListGroupsResponse);
-  rpc EnterGroup(EnterGroupRequest) returns (EnterLeaveGroupResponse);
-  rpc LeaveGroup(LeaveGroupRequest) returns (EnterLeaveGroupResponse);
-  rpc GetGroupParticipants(GetGroupParticipantsRequest) returns (GetGroupParticipantsResponse);
+// Serviço do Servidor de Descoberta (para gerenciar grupos e peers)
+service DiscoveryService {
+    rpc CreateGroup(CreateGroupRequest) returns (CreateGroupResponse);
+    rpc ListGroups(ListGroupsRequest) returns (ListGroupsResponse);
+    rpc EnterGroup(EnterGroupRequest) returns (EnterLeaveGroupResponse);
+    rpc LeaveGroup(LeaveGroupRequest) returns (EnterLeaveGroupResponse);
+    rpc GetGroupParticipants(GetGroupParticipantsRequest) returns (GetGroupParticipantsResponse);
+    
+    // Stream para notificar clientes sobre novos peers ou saídas
+    rpc SubscribeToGroupEvents(SubscriptionRequest) returns (stream GroupEvent);
+}
 
-  // Cliente: enviar e receber mensagens (streaming)
-  rpc SendMessage(ChatMessage) returns (google.protobuf.Empty);
-  rpc SubscribeToGroup(SubscriptionRequest) returns (stream ChatMessage);
+// Serviço Peer-to-Peer (que cada cliente irá hospedar)
+service PeerService {
+    // Para receber mensagens diretamente de outros peers
+    rpc SendDirectMessage(ChatMessage) returns (google.protobuf.Empty);
 }
