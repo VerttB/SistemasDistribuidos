@@ -55,12 +55,12 @@ message EnterGroupRequest {
     string peer_address = 4;
 }
 
+// Resposta de EnterGroup agora é mais simples, sem o histórico
 message EnterGroupResponse {
     bool success = 1;
     string message = 2;
     int32 assigned_process_id = 3;
     repeated PeerInfo existing_peers = 4;
-    repeated ChatMessage history = 5; // <-- NOVO: Adiciona o histórico
 }
 
 message LeaveGroupRequest {
@@ -81,11 +81,11 @@ service DiscoveryService {
     rpc EnterGroup(EnterGroupRequest) returns (EnterGroupResponse);
     rpc LeaveGroup(LeaveGroupRequest) returns (GenericResponse);
     rpc SubscribeToGroupEvents(SubscriptionRequest) returns (stream GroupEvent);
-    
-    // NOVO: RPC para o cliente enviar uma cópia da msg para o histórico
-    rpc LogMessage(ChatMessage) returns (google.protobuf.Empty);
+    // LogMessage foi removido daqui
 }
 
 service PeerService {
     rpc SendDirectMessage(ChatMessage) returns (google.protobuf.Empty);
+    // NOVO: RPC para um novo peer pedir o histórico a um peer existente
+    rpc GetHistory(google.protobuf.Empty) returns (stream ChatMessage);
 }

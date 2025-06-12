@@ -62,11 +62,6 @@ class DiscoveryServiceStub(object):
                 request_serializer=chat__pb2.SubscriptionRequest.SerializeToString,
                 response_deserializer=chat__pb2.GroupEvent.FromString,
                 _registered_method=True)
-        self.LogMessage = channel.unary_unary(
-                '/chat_system.DiscoveryService/LogMessage',
-                request_serializer=chat__pb2.ChatMessage.SerializeToString,
-                response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
-                _registered_method=True)
 
 
 class DiscoveryServiceServicer(object):
@@ -99,13 +94,7 @@ class DiscoveryServiceServicer(object):
         raise NotImplementedError('Method not implemented!')
 
     def SubscribeToGroupEvents(self, request, context):
-        """Missing associated documentation comment in .proto file."""
-        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-        context.set_details('Method not implemented!')
-        raise NotImplementedError('Method not implemented!')
-
-    def LogMessage(self, request, context):
-        """NOVO: RPC para o cliente enviar uma cópia da msg para o histórico
+        """LogMessage foi removido daqui
         """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -138,11 +127,6 @@ def add_DiscoveryServiceServicer_to_server(servicer, server):
                     servicer.SubscribeToGroupEvents,
                     request_deserializer=chat__pb2.SubscriptionRequest.FromString,
                     response_serializer=chat__pb2.GroupEvent.SerializeToString,
-            ),
-            'LogMessage': grpc.unary_unary_rpc_method_handler(
-                    servicer.LogMessage,
-                    request_deserializer=chat__pb2.ChatMessage.FromString,
-                    response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -292,33 +276,6 @@ class DiscoveryService(object):
             metadata,
             _registered_method=True)
 
-    @staticmethod
-    def LogMessage(request,
-            target,
-            options=(),
-            channel_credentials=None,
-            call_credentials=None,
-            insecure=False,
-            compression=None,
-            wait_for_ready=None,
-            timeout=None,
-            metadata=None):
-        return grpc.experimental.unary_unary(
-            request,
-            target,
-            '/chat_system.DiscoveryService/LogMessage',
-            chat__pb2.ChatMessage.SerializeToString,
-            google_dot_protobuf_dot_empty__pb2.Empty.FromString,
-            options,
-            channel_credentials,
-            insecure,
-            call_credentials,
-            compression,
-            wait_for_ready,
-            timeout,
-            metadata,
-            _registered_method=True)
-
 
 class PeerServiceStub(object):
     """Missing associated documentation comment in .proto file."""
@@ -334,6 +291,11 @@ class PeerServiceStub(object):
                 request_serializer=chat__pb2.ChatMessage.SerializeToString,
                 response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
                 _registered_method=True)
+        self.GetHistory = channel.unary_stream(
+                '/chat_system.PeerService/GetHistory',
+                request_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+                response_deserializer=chat__pb2.ChatMessage.FromString,
+                _registered_method=True)
 
 
 class PeerServiceServicer(object):
@@ -345,6 +307,13 @@ class PeerServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def GetHistory(self, request, context):
+        """NOVO: RPC para um novo peer pedir o histórico a um peer existente
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_PeerServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
@@ -352,6 +321,11 @@ def add_PeerServiceServicer_to_server(servicer, server):
                     servicer.SendDirectMessage,
                     request_deserializer=chat__pb2.ChatMessage.FromString,
                     response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+            ),
+            'GetHistory': grpc.unary_stream_rpc_method_handler(
+                    servicer.GetHistory,
+                    request_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+                    response_serializer=chat__pb2.ChatMessage.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -381,6 +355,33 @@ class PeerService(object):
             '/chat_system.PeerService/SendDirectMessage',
             chat__pb2.ChatMessage.SerializeToString,
             google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def GetHistory(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_stream(
+            request,
+            target,
+            '/chat_system.PeerService/GetHistory',
+            google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+            chat__pb2.ChatMessage.FromString,
             options,
             channel_credentials,
             insecure,

@@ -8,7 +8,7 @@ import time
 from collections import deque
 
 MAX_GROUP_SIZE = 20
-MAX_HISTORY_SIZE = 50 # Armazena as últimas 50 mensagens
+# MAX_HISTORY_SIZE não é mais necessário aqui
 
 class GroupInfo:
     def __init__(self, group_id, password=None):
@@ -18,11 +18,9 @@ class GroupInfo:
         self.subscribers = {}
         self.lock = threading.RLock()
         self.available_slots = list(range(MAX_GROUP_SIZE))
-        self.history = deque(maxlen=MAX_HISTORY_SIZE) # <-- NOVO: Armazenamento do histórico
+        # self.history foi removido
 
-    def add_message_to_history(self, message: chat_pb2.ChatMessage):
-        with self.lock:
-            self.history.append(message)
+    # método add_message_to_history foi removido
 
     # ... resto dos métodos da classe GroupInfo da resposta anterior ...
     def assign_slot(self):
@@ -57,16 +55,7 @@ class DiscoveryServiceServicer(chat_pb2_grpc.DiscoveryServiceServicer):
         self.lock = threading.RLock()
         print("Servidor de Descoberta inicializado.")
 
-    def CreateGroup(self, request, context):
-        with self.lock:
-            if request.group_id in self.groups:
-                return chat_pb2.GenericResponse(success=False, message="Grupo já existe.")
-            self.groups[request.group_id] = GroupInfo(request.group_id, request.password)
-        return chat_pb2.GenericResponse(success=True, message="Grupo criado com sucesso.")
-
-    def ListGroups(self, request, context):
-        with self.lock: group_ids = list(self.groups.keys())
-        return chat_pb2.ListGroupsResponse(group_ids=group_ids)
+    # CreateGroup e ListGroups permanecem os mesmos
 
     def EnterGroup(self, request, context):
         with self.lock: group = self.groups.get(request.group_id)
@@ -81,21 +70,27 @@ class DiscoveryServiceServicer(chat_pb2_grpc.DiscoveryServiceServicer):
             peer_info = chat_pb2.PeerInfo(user_id=request.user_id, address=request.peer_address, process_id=process_id)
             group.broadcast_event(chat_pb2.GroupEvent(user_joined=peer_info), exclude_user_id=request.user_id)
             group.add_participant(peer_info)
-            
-            # Recupera o histórico de mensagens para o novo usuário
-            history_messages = list(group.history)
 
             print(f"Usuário '{request.user_id}' (slot {process_id}) entrou no grupo '{request.group_id}'")
+            # Resposta agora não contém mais o histórico
             return chat_pb2.EnterGroupResponse(
-                success=True, assigned_process_id=process_id, existing_peers=existing_peers, history=history_messages
+                success=True, assigned_process_id=process_id, existing_peers=existing_peers
             )
 
-    def LogMessage(self, request: chat_pb2.ChatMessage, context):
-        with self.lock: group = self.groups.get(request.group_id)
-        if group: group.add_message_to_history(request)
-        return chat_pb2.google_dot_protobuf_dot_empty__pb2.Empty()
+    # LogMessage foi removido
 
-    # ... resto dos métodos do servicer (LeaveGroup, SubscribeToGroupEvents) da resposta anterior ...
+    # LeaveGroup e SubscribeToGroupEvents permanecem os mesmos
+    # (Omitidos por brevidade, use a versão da resposta anterior)
+    def CreateGroup(self, request, context):
+        with self.lock:
+            if request.group_id in self.groups:
+                return chat_pb2.GenericResponse(success=False, message="Grupo já existe.")
+            self.groups[request.group_id] = GroupInfo(request.group_id, request.password)
+        return chat_pb2.GenericResponse(success=True, message="Grupo criado com sucesso.")
+    def ListGroups(self, request, context):
+        with self.lock:
+            group_ids = list(self.groups.keys())
+        return chat_pb2.ListGroupsResponse(group_ids=group_ids)
     def LeaveGroup(self, request, context):
         with self.lock: group = self.groups.get(request.group_id)
         if not group: return chat_pb2.GenericResponse(success=False, message="Grupo não encontrado.")
@@ -104,7 +99,6 @@ class DiscoveryServiceServicer(chat_pb2_grpc.DiscoveryServiceServicer):
             group.broadcast_event(chat_pb2.GroupEvent(user_left_id=request.user_id), exclude_user_id=request.user_id)
             print(f"Usuário '{request.user_id}' (slot {slot_released}) saiu.")
         return chat_pb2.GenericResponse(success=True, message="Você saiu do grupo.")
-
     def SubscribeToGroupEvents(self, request, context):
         with self.lock: group = self.groups.get(request.group_id)
         if not group: context.abort(grpc.StatusCode.NOT_FOUND, "Grupo não encontrado.")

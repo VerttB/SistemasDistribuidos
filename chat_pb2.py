@@ -25,7 +25,7 @@ _sym_db = _symbol_database.Default()
 from google.protobuf import empty_pb2 as google_dot_protobuf_dot_empty__pb2
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\nchat.proto\x12\x0b\x63hat_system\x1a\x1bgoogle/protobuf/empty.proto\"\x1c\n\x0bVectorClock\x12\r\n\x05\x63lock\x18\x01 \x03(\x05\"n\n\x0b\x43hatMessage\x12\x0f\n\x07user_id\x18\x01 \x01(\t\x12\x0c\n\x04text\x18\x02 \x01(\t\x12.\n\x0cvector_clock\x18\x03 \x01(\x0b\x32\x18.chat_system.VectorClock\x12\x10\n\x08group_id\x18\x04 \x01(\t\"@\n\x08PeerInfo\x12\x0f\n\x07user_id\x18\x01 \x01(\t\x12\x0f\n\x07\x61\x64\x64ress\x18\x02 \x01(\t\x12\x12\n\nprocess_id\x18\x03 \x01(\x05\"[\n\nGroupEvent\x12,\n\x0buser_joined\x18\x01 \x01(\x0b\x32\x15.chat_system.PeerInfoH\x00\x12\x16\n\x0cuser_left_id\x18\x02 \x01(\tH\x00\x42\x07\n\x05\x65vent\"8\n\x12\x43reateGroupRequest\x12\x10\n\x08group_id\x18\x01 \x01(\t\x12\x10\n\x08password\x18\x02 \x01(\t\"3\n\x0fGenericResponse\x12\x0f\n\x07success\x18\x01 \x01(\x08\x12\x0f\n\x07message\x18\x02 \x01(\t\"\x13\n\x11ListGroupsRequest\"\'\n\x12ListGroupsResponse\x12\x11\n\tgroup_ids\x18\x01 \x03(\t\"^\n\x11\x45nterGroupRequest\x12\x10\n\x08group_id\x18\x01 \x01(\t\x12\x10\n\x08password\x18\x02 \x01(\t\x12\x0f\n\x07user_id\x18\x03 \x01(\t\x12\x14\n\x0cpeer_address\x18\x04 \x01(\t\"\xad\x01\n\x12\x45nterGroupResponse\x12\x0f\n\x07success\x18\x01 \x01(\x08\x12\x0f\n\x07message\x18\x02 \x01(\t\x12\x1b\n\x13\x61ssigned_process_id\x18\x03 \x01(\x05\x12-\n\x0e\x65xisting_peers\x18\x04 \x03(\x0b\x32\x15.chat_system.PeerInfo\x12)\n\x07history\x18\x05 \x03(\x0b\x32\x18.chat_system.ChatMessage\"6\n\x11LeaveGroupRequest\x12\x10\n\x08group_id\x18\x01 \x01(\t\x12\x0f\n\x07user_id\x18\x02 \x01(\t\"8\n\x13SubscriptionRequest\x12\x0f\n\x07user_id\x18\x01 \x01(\t\x12\x10\n\x08group_id\x18\x02 \x01(\t2\xe1\x03\n\x10\x44iscoveryService\x12L\n\x0b\x43reateGroup\x12\x1f.chat_system.CreateGroupRequest\x1a\x1c.chat_system.GenericResponse\x12M\n\nListGroups\x12\x1e.chat_system.ListGroupsRequest\x1a\x1f.chat_system.ListGroupsResponse\x12M\n\nEnterGroup\x12\x1e.chat_system.EnterGroupRequest\x1a\x1f.chat_system.EnterGroupResponse\x12J\n\nLeaveGroup\x12\x1e.chat_system.LeaveGroupRequest\x1a\x1c.chat_system.GenericResponse\x12U\n\x16SubscribeToGroupEvents\x12 .chat_system.SubscriptionRequest\x1a\x17.chat_system.GroupEvent0\x01\x12>\n\nLogMessage\x12\x18.chat_system.ChatMessage\x1a\x16.google.protobuf.Empty2T\n\x0bPeerService\x12\x45\n\x11SendDirectMessage\x12\x18.chat_system.ChatMessage\x1a\x16.google.protobuf.Emptyb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\nchat.proto\x12\x0b\x63hat_system\x1a\x1bgoogle/protobuf/empty.proto\"\x1c\n\x0bVectorClock\x12\r\n\x05\x63lock\x18\x01 \x03(\x05\"n\n\x0b\x43hatMessage\x12\x0f\n\x07user_id\x18\x01 \x01(\t\x12\x0c\n\x04text\x18\x02 \x01(\t\x12.\n\x0cvector_clock\x18\x03 \x01(\x0b\x32\x18.chat_system.VectorClock\x12\x10\n\x08group_id\x18\x04 \x01(\t\"@\n\x08PeerInfo\x12\x0f\n\x07user_id\x18\x01 \x01(\t\x12\x0f\n\x07\x61\x64\x64ress\x18\x02 \x01(\t\x12\x12\n\nprocess_id\x18\x03 \x01(\x05\"[\n\nGroupEvent\x12,\n\x0buser_joined\x18\x01 \x01(\x0b\x32\x15.chat_system.PeerInfoH\x00\x12\x16\n\x0cuser_left_id\x18\x02 \x01(\tH\x00\x42\x07\n\x05\x65vent\"8\n\x12\x43reateGroupRequest\x12\x10\n\x08group_id\x18\x01 \x01(\t\x12\x10\n\x08password\x18\x02 \x01(\t\"3\n\x0fGenericResponse\x12\x0f\n\x07success\x18\x01 \x01(\x08\x12\x0f\n\x07message\x18\x02 \x01(\t\"\x13\n\x11ListGroupsRequest\"\'\n\x12ListGroupsResponse\x12\x11\n\tgroup_ids\x18\x01 \x03(\t\"^\n\x11\x45nterGroupRequest\x12\x10\n\x08group_id\x18\x01 \x01(\t\x12\x10\n\x08password\x18\x02 \x01(\t\x12\x0f\n\x07user_id\x18\x03 \x01(\t\x12\x14\n\x0cpeer_address\x18\x04 \x01(\t\"\x82\x01\n\x12\x45nterGroupResponse\x12\x0f\n\x07success\x18\x01 \x01(\x08\x12\x0f\n\x07message\x18\x02 \x01(\t\x12\x1b\n\x13\x61ssigned_process_id\x18\x03 \x01(\x05\x12-\n\x0e\x65xisting_peers\x18\x04 \x03(\x0b\x32\x15.chat_system.PeerInfo\"6\n\x11LeaveGroupRequest\x12\x10\n\x08group_id\x18\x01 \x01(\t\x12\x0f\n\x07user_id\x18\x02 \x01(\t\"8\n\x13SubscriptionRequest\x12\x0f\n\x07user_id\x18\x01 \x01(\t\x12\x10\n\x08group_id\x18\x02 \x01(\t2\xa1\x03\n\x10\x44iscoveryService\x12L\n\x0b\x43reateGroup\x12\x1f.chat_system.CreateGroupRequest\x1a\x1c.chat_system.GenericResponse\x12M\n\nListGroups\x12\x1e.chat_system.ListGroupsRequest\x1a\x1f.chat_system.ListGroupsResponse\x12M\n\nEnterGroup\x12\x1e.chat_system.EnterGroupRequest\x1a\x1f.chat_system.EnterGroupResponse\x12J\n\nLeaveGroup\x12\x1e.chat_system.LeaveGroupRequest\x1a\x1c.chat_system.GenericResponse\x12U\n\x16SubscribeToGroupEvents\x12 .chat_system.SubscriptionRequest\x1a\x17.chat_system.GroupEvent0\x01\x32\x96\x01\n\x0bPeerService\x12\x45\n\x11SendDirectMessage\x12\x18.chat_system.ChatMessage\x1a\x16.google.protobuf.Empty\x12@\n\nGetHistory\x12\x16.google.protobuf.Empty\x1a\x18.chat_system.ChatMessage0\x01\x62\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -51,13 +51,13 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['_ENTERGROUPREQUEST']._serialized_start=530
   _globals['_ENTERGROUPREQUEST']._serialized_end=624
   _globals['_ENTERGROUPRESPONSE']._serialized_start=627
-  _globals['_ENTERGROUPRESPONSE']._serialized_end=800
-  _globals['_LEAVEGROUPREQUEST']._serialized_start=802
-  _globals['_LEAVEGROUPREQUEST']._serialized_end=856
-  _globals['_SUBSCRIPTIONREQUEST']._serialized_start=858
-  _globals['_SUBSCRIPTIONREQUEST']._serialized_end=914
-  _globals['_DISCOVERYSERVICE']._serialized_start=917
-  _globals['_DISCOVERYSERVICE']._serialized_end=1398
-  _globals['_PEERSERVICE']._serialized_start=1400
-  _globals['_PEERSERVICE']._serialized_end=1484
+  _globals['_ENTERGROUPRESPONSE']._serialized_end=757
+  _globals['_LEAVEGROUPREQUEST']._serialized_start=759
+  _globals['_LEAVEGROUPREQUEST']._serialized_end=813
+  _globals['_SUBSCRIPTIONREQUEST']._serialized_start=815
+  _globals['_SUBSCRIPTIONREQUEST']._serialized_end=871
+  _globals['_DISCOVERYSERVICE']._serialized_start=874
+  _globals['_DISCOVERYSERVICE']._serialized_end=1291
+  _globals['_PEERSERVICE']._serialized_start=1294
+  _globals['_PEERSERVICE']._serialized_end=1444
 # @@protoc_insertion_point(module_scope)
