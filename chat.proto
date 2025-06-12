@@ -17,14 +17,12 @@ message ChatMessage {
     string group_id = 4;
 }
 
-// Nova mensagem com informações de um peer
 message PeerInfo {
     string user_id = 1;
-    string address = 2; // Ex: "localhost:50052"
+    string address = 2;
     int32 process_id = 3;
 }
 
-// Nova mensagem de evento para notificar sobre mudanças no grupo
 message GroupEvent {
     oneof event {
         PeerInfo user_joined = 1;
@@ -32,14 +30,14 @@ message GroupEvent {
     }
 }
 
-// --- Mensagens de Requisição/Resposta para o Servidor de Descoberta ---
+// --- Mensagens de Requisição/Resposta ---
 
 message CreateGroupRequest {
     string group_id = 1;
     string password = 2;
 }
 
-message CreateGroupResponse {
+message GenericResponse {
     bool success = 1;
     string message = 2;
 }
@@ -54,26 +52,20 @@ message EnterGroupRequest {
     string group_id = 1;
     string password = 2;
     string user_id = 3;
-    string peer_address = 4; // Endereço deste cliente
-    int32 client_process_id = 5;
+    string peer_address = 4;
 }
 
-message EnterLeaveGroupResponse {
+message EnterGroupResponse {
     bool success = 1;
     string message = 2;
+    int32 assigned_process_id = 3;
+    repeated PeerInfo existing_peers = 4;
+    repeated ChatMessage history = 5; // <-- NOVO: Adiciona o histórico
 }
 
 message LeaveGroupRequest {
     string group_id = 1;
     string user_id = 2;
-}
-
-message GetGroupParticipantsRequest {
-    string group_id = 1;
-}
-
-message GetGroupParticipantsResponse {
-    repeated PeerInfo peers = 1; // Retorna a lista de peers
 }
 
 message SubscriptionRequest {
@@ -83,20 +75,17 @@ message SubscriptionRequest {
 
 // --- Serviços gRPC ---
 
-// Serviço do Servidor de Descoberta (para gerenciar grupos e peers)
 service DiscoveryService {
-    rpc CreateGroup(CreateGroupRequest) returns (CreateGroupResponse);
+    rpc CreateGroup(CreateGroupRequest) returns (GenericResponse);
     rpc ListGroups(ListGroupsRequest) returns (ListGroupsResponse);
-    rpc EnterGroup(EnterGroupRequest) returns (EnterLeaveGroupResponse);
-    rpc LeaveGroup(LeaveGroupRequest) returns (EnterLeaveGroupResponse);
-    rpc GetGroupParticipants(GetGroupParticipantsRequest) returns (GetGroupParticipantsResponse);
-    
-    // Stream para notificar clientes sobre novos peers ou saídas
+    rpc EnterGroup(EnterGroupRequest) returns (EnterGroupResponse);
+    rpc LeaveGroup(LeaveGroupRequest) returns (GenericResponse);
     rpc SubscribeToGroupEvents(SubscriptionRequest) returns (stream GroupEvent);
+    
+    // NOVO: RPC para o cliente enviar uma cópia da msg para o histórico
+    rpc LogMessage(ChatMessage) returns (google.protobuf.Empty);
 }
 
-// Serviço Peer-to-Peer (que cada cliente irá hospedar)
 service PeerService {
-    // Para receber mensagens diretamente de outros peers
     rpc SendDirectMessage(ChatMessage) returns (google.protobuf.Empty);
 }

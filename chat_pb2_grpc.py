@@ -29,7 +29,6 @@ if _version_not_supported:
 class DiscoveryServiceStub(object):
     """--- Serviços gRPC ---
 
-    Serviço do Servidor de Descoberta (para gerenciar grupos e peers)
     """
 
     def __init__(self, channel):
@@ -41,7 +40,7 @@ class DiscoveryServiceStub(object):
         self.CreateGroup = channel.unary_unary(
                 '/chat_system.DiscoveryService/CreateGroup',
                 request_serializer=chat__pb2.CreateGroupRequest.SerializeToString,
-                response_deserializer=chat__pb2.CreateGroupResponse.FromString,
+                response_deserializer=chat__pb2.GenericResponse.FromString,
                 _registered_method=True)
         self.ListGroups = channel.unary_unary(
                 '/chat_system.DiscoveryService/ListGroups',
@@ -51,29 +50,28 @@ class DiscoveryServiceStub(object):
         self.EnterGroup = channel.unary_unary(
                 '/chat_system.DiscoveryService/EnterGroup',
                 request_serializer=chat__pb2.EnterGroupRequest.SerializeToString,
-                response_deserializer=chat__pb2.EnterLeaveGroupResponse.FromString,
+                response_deserializer=chat__pb2.EnterGroupResponse.FromString,
                 _registered_method=True)
         self.LeaveGroup = channel.unary_unary(
                 '/chat_system.DiscoveryService/LeaveGroup',
                 request_serializer=chat__pb2.LeaveGroupRequest.SerializeToString,
-                response_deserializer=chat__pb2.EnterLeaveGroupResponse.FromString,
-                _registered_method=True)
-        self.GetGroupParticipants = channel.unary_unary(
-                '/chat_system.DiscoveryService/GetGroupParticipants',
-                request_serializer=chat__pb2.GetGroupParticipantsRequest.SerializeToString,
-                response_deserializer=chat__pb2.GetGroupParticipantsResponse.FromString,
+                response_deserializer=chat__pb2.GenericResponse.FromString,
                 _registered_method=True)
         self.SubscribeToGroupEvents = channel.unary_stream(
                 '/chat_system.DiscoveryService/SubscribeToGroupEvents',
                 request_serializer=chat__pb2.SubscriptionRequest.SerializeToString,
                 response_deserializer=chat__pb2.GroupEvent.FromString,
                 _registered_method=True)
+        self.LogMessage = channel.unary_unary(
+                '/chat_system.DiscoveryService/LogMessage',
+                request_serializer=chat__pb2.ChatMessage.SerializeToString,
+                response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+                _registered_method=True)
 
 
 class DiscoveryServiceServicer(object):
     """--- Serviços gRPC ---
 
-    Serviço do Servidor de Descoberta (para gerenciar grupos e peers)
     """
 
     def CreateGroup(self, request, context):
@@ -100,14 +98,14 @@ class DiscoveryServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
-    def GetGroupParticipants(self, request, context):
+    def SubscribeToGroupEvents(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
-    def SubscribeToGroupEvents(self, request, context):
-        """Stream para notificar clientes sobre novos peers ou saídas
+    def LogMessage(self, request, context):
+        """NOVO: RPC para o cliente enviar uma cópia da msg para o histórico
         """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -119,7 +117,7 @@ def add_DiscoveryServiceServicer_to_server(servicer, server):
             'CreateGroup': grpc.unary_unary_rpc_method_handler(
                     servicer.CreateGroup,
                     request_deserializer=chat__pb2.CreateGroupRequest.FromString,
-                    response_serializer=chat__pb2.CreateGroupResponse.SerializeToString,
+                    response_serializer=chat__pb2.GenericResponse.SerializeToString,
             ),
             'ListGroups': grpc.unary_unary_rpc_method_handler(
                     servicer.ListGroups,
@@ -129,22 +127,22 @@ def add_DiscoveryServiceServicer_to_server(servicer, server):
             'EnterGroup': grpc.unary_unary_rpc_method_handler(
                     servicer.EnterGroup,
                     request_deserializer=chat__pb2.EnterGroupRequest.FromString,
-                    response_serializer=chat__pb2.EnterLeaveGroupResponse.SerializeToString,
+                    response_serializer=chat__pb2.EnterGroupResponse.SerializeToString,
             ),
             'LeaveGroup': grpc.unary_unary_rpc_method_handler(
                     servicer.LeaveGroup,
                     request_deserializer=chat__pb2.LeaveGroupRequest.FromString,
-                    response_serializer=chat__pb2.EnterLeaveGroupResponse.SerializeToString,
-            ),
-            'GetGroupParticipants': grpc.unary_unary_rpc_method_handler(
-                    servicer.GetGroupParticipants,
-                    request_deserializer=chat__pb2.GetGroupParticipantsRequest.FromString,
-                    response_serializer=chat__pb2.GetGroupParticipantsResponse.SerializeToString,
+                    response_serializer=chat__pb2.GenericResponse.SerializeToString,
             ),
             'SubscribeToGroupEvents': grpc.unary_stream_rpc_method_handler(
                     servicer.SubscribeToGroupEvents,
                     request_deserializer=chat__pb2.SubscriptionRequest.FromString,
                     response_serializer=chat__pb2.GroupEvent.SerializeToString,
+            ),
+            'LogMessage': grpc.unary_unary_rpc_method_handler(
+                    servicer.LogMessage,
+                    request_deserializer=chat__pb2.ChatMessage.FromString,
+                    response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -157,7 +155,6 @@ def add_DiscoveryServiceServicer_to_server(servicer, server):
 class DiscoveryService(object):
     """--- Serviços gRPC ---
 
-    Serviço do Servidor de Descoberta (para gerenciar grupos e peers)
     """
 
     @staticmethod
@@ -176,7 +173,7 @@ class DiscoveryService(object):
             target,
             '/chat_system.DiscoveryService/CreateGroup',
             chat__pb2.CreateGroupRequest.SerializeToString,
-            chat__pb2.CreateGroupResponse.FromString,
+            chat__pb2.GenericResponse.FromString,
             options,
             channel_credentials,
             insecure,
@@ -230,7 +227,7 @@ class DiscoveryService(object):
             target,
             '/chat_system.DiscoveryService/EnterGroup',
             chat__pb2.EnterGroupRequest.SerializeToString,
-            chat__pb2.EnterLeaveGroupResponse.FromString,
+            chat__pb2.EnterGroupResponse.FromString,
             options,
             channel_credentials,
             insecure,
@@ -257,34 +254,7 @@ class DiscoveryService(object):
             target,
             '/chat_system.DiscoveryService/LeaveGroup',
             chat__pb2.LeaveGroupRequest.SerializeToString,
-            chat__pb2.EnterLeaveGroupResponse.FromString,
-            options,
-            channel_credentials,
-            insecure,
-            call_credentials,
-            compression,
-            wait_for_ready,
-            timeout,
-            metadata,
-            _registered_method=True)
-
-    @staticmethod
-    def GetGroupParticipants(request,
-            target,
-            options=(),
-            channel_credentials=None,
-            call_credentials=None,
-            insecure=False,
-            compression=None,
-            wait_for_ready=None,
-            timeout=None,
-            metadata=None):
-        return grpc.experimental.unary_unary(
-            request,
-            target,
-            '/chat_system.DiscoveryService/GetGroupParticipants',
-            chat__pb2.GetGroupParticipantsRequest.SerializeToString,
-            chat__pb2.GetGroupParticipantsResponse.FromString,
+            chat__pb2.GenericResponse.FromString,
             options,
             channel_credentials,
             insecure,
@@ -322,10 +292,36 @@ class DiscoveryService(object):
             metadata,
             _registered_method=True)
 
+    @staticmethod
+    def LogMessage(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/chat_system.DiscoveryService/LogMessage',
+            chat__pb2.ChatMessage.SerializeToString,
+            google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
 
 class PeerServiceStub(object):
-    """Serviço Peer-to-Peer (que cada cliente irá hospedar)
-    """
+    """Missing associated documentation comment in .proto file."""
 
     def __init__(self, channel):
         """Constructor.
@@ -341,12 +337,10 @@ class PeerServiceStub(object):
 
 
 class PeerServiceServicer(object):
-    """Serviço Peer-to-Peer (que cada cliente irá hospedar)
-    """
+    """Missing associated documentation comment in .proto file."""
 
     def SendDirectMessage(self, request, context):
-        """Para receber mensagens diretamente de outros peers
-        """
+        """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
@@ -368,8 +362,7 @@ def add_PeerServiceServicer_to_server(servicer, server):
 
  # This class is part of an EXPERIMENTAL API.
 class PeerService(object):
-    """Serviço Peer-to-Peer (que cada cliente irá hospedar)
-    """
+    """Missing associated documentation comment in .proto file."""
 
     @staticmethod
     def SendDirectMessage(request,

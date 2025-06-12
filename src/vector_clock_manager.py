@@ -8,13 +8,14 @@ class VectorClockManager:
         self.process_id = process_id
         self.clock = [0] * num_processes
         print(f"Processo {self.process_id}: Relógio inicializado como {self.clock}")
-
+    	
+     #aumenta o relogio 
     def increment(self):
         self.clock[self.process_id] += 1
         print(f"Processo {self.process_id}: Relógio incrementado para {self.clock}")
 
+    #atualia o relogio
     def update(self, received_clock_list: list[int]):
-        # Expande o relógio local se o recebido for maior (novo membro entrou no grupo)
         if len(received_clock_list) > len(self.clock):
             diff = len(received_clock_list) - len(self.clock)
             self.clock.extend([0] * diff)
@@ -22,7 +23,6 @@ class VectorClockManager:
 
         elif len(received_clock_list) < len(self.clock):
             print(f"Processo {self.process_id}: Aviso - relógio recebido menor que esperado. Esperado: {len(self.clock)}, Recebido: {len(received_clock_list)}")
-            # Podemos optar por ignorar, lançar exceção ou truncar. Aqui vamos ignorar.
             return
 
         print(f"Processo {self.process_id}: Antes da atualização com {received_clock_list}, relógio local é {self.clock}")
