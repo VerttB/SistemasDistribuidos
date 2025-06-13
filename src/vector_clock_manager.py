@@ -41,6 +41,7 @@ class VectorClockManager:
 
     def happened_before(self, other_clock: list[int]) -> bool:
         """Verifica se o relógio local ocorreu antes do outro (ordenação causal)."""
+        
         if len(other_clock) != len(self.clock):
             raise ValueError("Relógios incompatíveis para comparação")
 

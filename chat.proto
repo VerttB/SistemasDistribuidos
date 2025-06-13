@@ -4,7 +4,6 @@ import "google/protobuf/empty.proto";
 
 package chat_system;
 
-// --- Estruturas de Dados ---
 
 message VectorClock {
     repeated int32 clock = 1;
@@ -30,7 +29,6 @@ message GroupEvent {
     }
 }
 
-// --- Mensagens de Requisição/Resposta ---
 
 message CreateGroupRequest {
     string group_id = 1;
@@ -55,7 +53,6 @@ message EnterGroupRequest {
     string peer_address = 4;
 }
 
-// Resposta de EnterGroup agora é mais simples, sem o histórico
 message EnterGroupResponse {
     bool success = 1;
     string message = 2;
@@ -73,7 +70,7 @@ message SubscriptionRequest {
     string group_id = 2;
 }
 
-// --- Serviços gRPC ---
+
 
 service DiscoveryService {
     rpc CreateGroup(CreateGroupRequest) returns (GenericResponse);
@@ -86,6 +83,5 @@ service DiscoveryService {
 
 service PeerService {
     rpc SendDirectMessage(ChatMessage) returns (google.protobuf.Empty);
-    // NOVO: RPC para um novo peer pedir o histórico a um peer existente
     rpc GetHistory(google.protobuf.Empty) returns (stream ChatMessage);
 }

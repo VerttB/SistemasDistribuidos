@@ -25,7 +25,7 @@ class PeerServicer(chat_pb2_grpc.PeerServiceServicer):
     def __init__(self, client_instance): self.client = client_instance
     
     def SendDirectMessage(self, request: chat_pb2.ChatMessage, context):
-        self.client.receive_direct_message(request)
+        self.client.receberMensagem(request)
         return chat_pb2.google_dot_protobuf_dot_empty__pb2.Empty()
 
    
@@ -51,7 +51,7 @@ class P2PChatClient:
         chat_pb2_grpc.add_PeerServiceServicer_to_server(PeerServicer(self), self.peer_server)
         self.peer_server.add_insecure_port(self.peer_address)
 
-    def receive_direct_message(self, message: chat_pb2.ChatMessage):
+    def receberMensagem(self, message: chat_pb2.ChatMessage):
         if self.vcm is None: return
         with self.lock:
             self.vcm.update(list(message.vector_clock.clock))
@@ -59,7 +59,7 @@ class P2PChatClient:
         print(f"\n<{message.user_id}> {message.text}")
         self._print_prompt()
         
-    def enter_group(self, group_id: str, pw: str = ""):
+    def entrarEmGrupo(self, group_id: str, pw: str = ""):
         if self.group_id: print("[Sistema] Você já está em um grupo."); return
         try:
             req = chat_pb2.EnterGroupRequest(group_id=group_id, password=pw, user_id=self.user_id, peer_address=self.peer_address)
@@ -72,7 +72,7 @@ class P2PChatClient:
             print(f"[Sistema] Conectado a '{group_id}' com ID {self.process_id}.")
 
             with self.lock:
-                for peer in res.existing_peers: self._connect_to_peer(peer)
+                for peer in res.existing_peers: self.conectarPeer(peer)
             
             
             if self.peers:
@@ -94,7 +94,7 @@ class P2PChatClient:
             threading.Thread(target=self._listen_for_discovery_events, daemon=True).start()
         except grpc.RpcError as e: print(f"[Sistema] ERRO: {e.details()}")
 
-    def send_message(self, text: str):
+    def mandarMensagem(self, text: str):
         with self.lock:
             self.vcm.increment()
             message = chat_pb2.ChatMessage(user_id=self.user_id, text=text, vector_clock=self.vcm.get_clock_proto(), group_id=self.group_id)
@@ -110,11 +110,11 @@ class P2PChatClient:
                 print(f"[Sistema] ERRO: Falha ao enviar para {uid}.")
         
        
-    def start_peer_server(self):
+    def começarPeer(self):
         print(f"[{self.user_id}] Iniciando servidor P2P em {self.peer_address}")
         self.peer_server.start()
         
-    def stop_peer_server(self):
+    def pararPeer(self):
         self.is_listening_to_events.set()
         print(f"[{self.user_id}] Parando servidor P2P.")
         self.peer_server.stop(1)
@@ -124,7 +124,7 @@ class P2PChatClient:
         if self.process_id is not None: prompt = f"[{self.user_id}:{self.process_id}@{self.group_id}]"
         print(f"{prompt} > ", end='', flush=True)
         
-    def _connect_to_peer(self, peer_info: chat_pb2.PeerInfo):
+    def conectarPeer(self, peer_info: chat_pb2.PeerInfo):
         if peer_info.user_id == self.user_id or peer_info.user_id in self.peers:
             return
         
@@ -132,7 +132,8 @@ class P2PChatClient:
         self._print_prompt()
         channel = grpc.insecure_channel(peer_info.address)
         self.peers[peer_info.user_id] = chat_pb2_grpc.PeerServiceStub(channel)
-    def _disconnect_from_peer(self, user_id: str):
+        
+    def desconectarPeer(self, user_id: str):
         if user_id in self.peers:
             print(f"\n[Sistema] Peer '{user_id}' saiu.")
             self._print_prompt()
@@ -148,22 +149,22 @@ class P2PChatClient:
                     break
                 with self.lock:
                     if event.HasField("user_joined"):
-                        self._connect_to_peer(event.user_joined)
+                        self.conectarPeer(event.user_joined)
                     elif event.HasField("user_left_id"):
-                        self._disconnect_from_peer(event.user_left_id)
+                        self.desconectarPeer(event.user_left_id)
         except grpc.RpcError:
-            print("\n[Sistema] Conexão com o servidor de descoberta perdida.")
+            print("\n[Sistema] Conexão com o servidor perdida.")
             self._print_prompt()
             
             
-    def create_group(self, group_id: str, pw: str = ""):
+    def criarGrupo(self, group_id: str, pw: str = ""):
         try:
             print(f"[Sistema] {self.discovery_stub.CreateGroup(chat_pb2.CreateGroupRequest(group_id=group_id, password=pw)).message}")
         except grpc.RpcError as e:
             print(f"[Sistema] ERRO: {e.details()}")
             
             
-    def list_groups(self):
+    def listar_grupos(self):
         try:
             res = self.discovery_stub.ListGroups(chat_pb2.ListGroupsRequest())
             if not res.group_ids:
@@ -174,7 +175,7 @@ class P2PChatClient:
         except grpc.RpcError as e: print(f"[Sistema] ERRO: {e.details()}")
         
         
-    def leave_group(self):
+    def sair_grupo(self):
         if not self.group_id: return
         try: self.discovery_stub.LeaveGroup(chat_pb2.LeaveGroupRequest(group_id=self.group_id, user_id=self.user_id))
         except grpc.RpcError: pass 
@@ -185,7 +186,7 @@ class P2PChatClient:
             self.message_history.clear()
             
             
-    def show_help(self):
+    def ajuda(self):
         print("\n--- Comandos ---")
         if self.group_id:
             print("/sairgrupo- Sai do grupo atual.")
@@ -199,25 +200,31 @@ class P2PChatClient:
             print("------------------\n")
             
             
-    def start_chat(self):
-        server_thread = threading.Thread(target=self.start_peer_server, daemon=True); server_thread.start()
-        time.sleep(1); print("Bem-vindo ao Chat P2P!"); self.show_help()
+    def começarChat(self):
+        server_thread = threading.Thread(target=self.começarPeer, daemon=True); server_thread.start()
+        time.sleep(1); print("Bem-vindo ao Chat P2P!"); self.ajuda()
         try:
             while True:
                 self._print_prompt(); cmd = input()
                 if not cmd: continue
                 if cmd.lower() == 'sair': break
-                elif cmd.lower() == '/ajuda': self.show_help()
+                elif cmd.lower() == '/ajuda': self.ajuda()
                 elif self.group_id:
-                    if cmd.lower() == '/sairgrupo': self.leave_group()
-                    else: self.send_message(cmd)
+                    if cmd.lower() == '/sairgrupo': self.sair_grupo()
+                    else: self.mandarMensagem(cmd)
                 else: 
-                    if cmd.startswith('/criar '): parts = cmd.split(maxsplit=2); self.create_group(parts[1], parts[2] if len(parts) > 2 else "")
-                    elif cmd.lower() == '/listagrupos': self.list_groups()
-                    elif cmd.startswith('/entrar '): parts = cmd.split(maxsplit=2); self.enter_group(parts[1], parts[2] if len(parts) > 2 else "")
+                    if cmd.startswith('/criar '):
+                        parts = cmd.split(maxsplit=2)
+                        self.criarGrupo(parts[1], parts[2] if len(parts) > 2 else "")
+                        
+                    elif cmd.lower() == '/listagrupos': self.listar_grupos()
+                    elif cmd.startswith('/entrar '):
+                        parts = cmd.split(maxsplit=2)
+                        self.entrarEmGrupo(parts[1], parts[2] if len(parts) > 2 else "")
                     else: print("[Sistema] Comando inválido no lobby.")
+                    
         except (KeyboardInterrupt, EOFError): print("\nEncerrando...")
-        finally: self.leave_group(); self.stop_peer_server()
+        finally: self.sair_grupo(); self.pararPeer()
 
 
 if __name__ == "__main__":
@@ -225,4 +232,4 @@ if __name__ == "__main__":
     if len(sys.argv) != 2: print("Uso: python peer_client.py <user_id>"); sys.exit(1)
     
     client = P2PChatClient(user_id=sys.argv[1], peer_address=f"{_get_local_ip()}:{_get_free_port()}")
-    client.start_chat()
+    client.começarChat()
