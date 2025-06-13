@@ -1,3 +1,12 @@
+# Instalar Dependencias
+* pip install grpcio grpcio-tools
+# Como rodar
+## Rode esse comando para iniciar o GRPC
+python -m grpc_tools.protoc -I. --python_out=. --grpc_python_out=. chat.proto
+## Comandos para iniciar o servidor
+python ./server.py
+python ./client.py <Nome>
+
 # Sistema de Chat Distribuído com Ordenação de Mensagens por Relógios Vetoriais
 
 ## 1. Visão Geral do Problema
@@ -91,19 +100,7 @@ O servidor iniciará e aguardará conexões na porta `localhost:50051`.
 ### 4.5. Executando os Clientes
 Você precisará de dois terminais separados para rodar os dois clientes.
 
-* **Cliente A (Processo 0):**
-    No primeiro terminal de cliente, execute:
-    ```bash
-    python client.py
-    ```
-    Quando solicitado, digite `0` para o "ID do Processo deste Cliente".
 
-* **Cliente B (Processo 1):**
-    No segundo terminal de cliente, execute:
-    ```bash
-    python client.py
-    ```
-    Quando solicitado, digite `1` para o "ID do Processo deste Cliente".
 
 Agora você pode enviar mensagens de qualquer cliente. As mensagens serão exibidas em ambos os clientes, juntamente com o log dos relógios vetoriais, demonstrando a atualização dos mesmos em cada evento de envio e recebimento.
 
